@@ -1,26 +1,19 @@
 import pygame
 import random
-import math
+import numpy as np
 
-MAX_SPEED = 200
-SPEED = 500 
+MAX_SPEED = 500
+MAX_ACELLERATION = 5
 
 class Particle(pygame.sprite.Sprite):
 
     def __init__(self, radius, x, y):
         super().__init__()
         self.center = None
-        direction = random.randint(1,4)
-        if(direction == 1):
-            self.speed = pygame.math.Vector2(SPEED/radius,SPEED/radius)
-        elif(direction == 2):
-            self.speed = pygame.math.Vector2(-SPEED/radius,-SPEED/radius)
-        elif(direction == 3):
-            self.speed = pygame.math.Vector2(-SPEED/radius,SPEED/radius)
-        elif(direction == 4):
-            self.speed = pygame.math.Vector2(SPEED/radius,-SPEED/radius)
+        
+        self.coord = np.array([x,y])
 
-        self.image = pygame.Surface((radius*2, radius*2))
+        self.image = pygame.Surface((radius<<1, radius<<1))
         self.image.fill("white")
         self.image.set_colorkey("white")
         self.color = (random.uniform(0,255), random.uniform(0,255),random.uniform(0,255))
@@ -29,41 +22,27 @@ class Particle(pygame.sprite.Sprite):
 
         self.rect = self.image.get_rect()
         self.rect.center = [x, y]
+        self.speed = np.random.randint(-MAX_SPEED//(self.radius>>1), MAX_SPEED//(self.radius>>1), 2)
         
 
     def update(self, x, y, dt, group):
         self.updatePosition(dt)
-        #self.updateCollision(group)
         self.boundaries(x,y)
         
 
     def boundaries(self, x, y):
-        if (self.rect.x + 2*self.radius >= x or self.rect.x <= 0):
-            self.speed.x = -self.speed.x
-        if (self.rect.y + 2*self.radius >= y or self.rect.y <= 0):
-            self.speed.y = -self.speed.y
+        if (self.rect.x + (self.radius<<1) >= x or self.rect.x <= 0):
+            self.speed[0] = self.speed[0] * -1
+        if (self.rect.y + (self.radius<<1) >= y or self.rect.y <= 0):
+            self.speed[1] = self.speed[1] * -1
 
     def updatePosition(self, dt):
-        self.rect.x += self.speed.x * dt
-        self.rect.y += self.speed.y * dt
-
-    def updateCollision(self, group):
-        aux = pygame.sprite.Group()
-        for elem1 in group:
-            current = elem1
-            group.remove(elem1)
-            aux.add(current)
-            for elem2 in group:
-                if(current.colide(elem2)):
-                    current.updatePositionsPosCollision(elem2)
-        for elem in aux:
-            group.add(elem)
+        self.coord = np.add(self.coord, (self.speed.dot(dt)))
+        self.rect.center = self.coord
 
     def updatePositionsPosCollision(self, other):
-        self.speed.x = -self.speed.x
-        self.speed.y = -self.speed.y
-        other.speed.x = -other.speed.x
-        other.speed.y = -other.speed.y
+        self.speed = np.invert(self.speed)
+        other.speed = np.invert(other.speed)
 
     def colide(self, other):
         return (self.rect.center[0] - other.rect.center[0]) * (self.rect.center[0] - other.rect.center[0]) + (self.rect.center[1] - other.rect.center[1]) * (self.rect.center[1] - other.rect.center[1]) <= pow(self.radius+other.radius,2)

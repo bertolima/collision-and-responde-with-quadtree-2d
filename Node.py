@@ -1,5 +1,9 @@
 import pygame
 from collections import deque
+import numpy as np
+import time
+def end_of_loop():
+    raise StopIteration
 
 class Node(pygame.sprite.Sprite):
     def __init__(self, x, y, width):
@@ -55,27 +59,22 @@ class Node(pygame.sprite.Sprite):
         ver = True
         drawList.add(self)
         count = 0
-        transversed = deque()
-        for particle in ParticleList:
-            if (self.contains(particle)):
-                count+=1
-                transversed.append(particle)
-            if(self.divided and count > 4 ):
-                ver = False
-                self.ne.updateTree(ParticleList, drawList)
-                self.nd.updateTree(ParticleList, drawList)
-                self.se.updateTree(ParticleList, drawList)
-                self.sd.updateTree(ParticleList, drawList)
-                break
+        transversed2 = np.array([item for item in ParticleList if(self.contains(item))])
+        if(self.divided and len(transversed2) > 4):
+            ver = False
+            self.ne.updateTree(ParticleList, drawList)
+            self.nd.updateTree(ParticleList, drawList)
+            self.se.updateTree(ParticleList, drawList)
+            self.sd.updateTree(ParticleList, drawList)
         if (ver == True):
-            self.updateBalls(transversed)
+            self.updateBalls(transversed2)
     
-    def updateBalls(self, particleList):
-        while(particleList):
-            current = particleList.popleft()
-            for ball in particleList:
-                if (current != ball and current.colide(ball)):
-                    current.updatePositionsPosCollision(ball)
+    def updateBalls(self, particleList:np.array):
+        while(particleList.size > 0):
+            current = particleList[0]
+            particleList = np.delete(particleList, 0)
+            [current.updatePositionsPosCollision(ball) for ball in particleList if (current != ball and current.colide(ball))]
+            
 
                 
             

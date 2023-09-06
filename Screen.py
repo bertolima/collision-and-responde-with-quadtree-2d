@@ -1,5 +1,6 @@
 import pygame
 import random
+import numpy as np
 import threading
 from Particle import Particle
 from Quadtree import Quadtree
@@ -16,11 +17,13 @@ class Screen:
 
         self.objects:pygame.sprite.Group = None
         self.rectangles:pygame.sprite.Group = None
+        self.npParticles = None
         self.test = []
         self.tree = None
 
         self.initVariables(x,y)
         self.initWindow()
+        self.initParticles()
         self.initTree()
     
     def initVariables(self, x, y):
@@ -35,10 +38,16 @@ class Screen:
         self.window = pygame.display.set_mode((self.coord))
     
     def initTree(self):
-        for i in range(300):
-            self.objects.add(Particle(random.randint(5,15), random.randint(20,780), random.randint(20,780)))
-        self.tree = Quadtree(int(self.coord.x),5)
+        self.tree = Quadtree(int(self.coord.x),6)
         self.tree.divide()
+
+    def initParticles(self):
+        numberElementos = 200
+        self.npParticles = np.empty(numberElementos, dtype=Particle)
+        for i in range(numberElementos):
+            new_element = Particle(random.randint(5,15), random.randint(20,780), random.randint(20,780))
+            self.objects.add(new_element)
+            self.npParticles[i] = new_element
 
 
     def createParticles(self):
@@ -55,7 +64,7 @@ class Screen:
         self.objects.draw(self.window)
     
     def updateTree(self):
-        self.tree.updateTree(self.objects)
+        self.tree.updateTree(self.npParticles)
     
     def renderRectangles(self):
         self.tree.drawNode(self.window)
@@ -82,7 +91,7 @@ class Screen:
         self.renderRectangles()
         
         pygame.display.flip()
-        self.dt = self.clock.tick(60) / 1000
+        self.dt = self.clock.tick() / 1000
         print(self.clock.get_fps())
 
     
