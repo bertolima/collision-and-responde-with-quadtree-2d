@@ -1,6 +1,7 @@
 import pygame
 import random
 import numpy as np
+import time
 import threading
 from Particle import Particle
 from Quadtree import Quadtree
@@ -20,6 +21,9 @@ class Screen:
         self.npParticles = None
         self.test = []
         self.tree = None
+        self.cont = 0
+        self.sum = 0
+        self.canDrawTree = False
 
         self.initVariables(x,y)
         self.initWindow()
@@ -42,7 +46,7 @@ class Screen:
         self.tree.divide()
 
     def initParticles(self):
-        numberElementos = 200
+        numberElementos = 100
         self.npParticles = np.empty(numberElementos, dtype=Particle)
         for i in range(numberElementos):
             new_element = Particle(random.randint(5,15), random.randint(20,780), random.randint(20,780))
@@ -67,7 +71,8 @@ class Screen:
         self.tree.updateTree(self.npParticles)
     
     def renderRectangles(self):
-        self.tree.drawNode(self.window)
+        if(self.canDrawTree):
+            self.tree.drawNode(self.window)
 
     def poolEvent(self):
         for event in pygame.event.get():
@@ -76,14 +81,19 @@ class Screen:
             elif(event.type == pygame.KEYDOWN):
                 if(event.key == pygame.K_ESCAPE):
                     self.running = False
+                elif(event.key == pygame.K_f):
+                    if(self.canDrawTree):
+                        self.canDrawTree = False
+                    else:
+                        self.canDrawTree = True
 
     def update(self):
         self.poolEvent()
-        #self.createParticles()
         self.updateParticles()
         self.updateTree()
-        
+
     def render(self):
+        self.cont +=1
         self.window.fill("black")
 
         self.renderParticles()
@@ -91,8 +101,10 @@ class Screen:
         self.renderRectangles()
         
         pygame.display.flip()
-        self.dt = self.clock.tick() / 1000
-        print(self.clock.get_fps())
+        self.dt = self.clock.tick(60) / 1000
+        self.sum += self.clock.get_fps()
+        media = self.sum//self.cont
+        print(media)
 
     
     def isRunning(self):

@@ -35,7 +35,6 @@ class Node(pygame.sprite.Sprite):
         arr.append(self.se)
         self.divided = True
 
-    
     def contains(self, other):
         if(self.rect.x <= other.rect.x + other.radius <= self.rect.x+self.width and self.rect.y <= other.rect.y + other.radius <= self.rect.y+self.width):
             if(other.rect.x >= self.rect.x and other.rect.x + other.radius <= self.rect.x+self.width and 
@@ -43,38 +42,25 @@ class Node(pygame.sprite.Sprite):
                 return True
         return False
 
-    def getChildren(self, arr, group):
-        if(self.ne is not None):
-            arr.append(self.ne)
-            arr.append(self.nd)
-            arr.append(self.sd)
-            arr.append(self.se)
-        
-            group.add(self.ne)
-            group.add(self.nd)
-            group.add(self.sd)
-            group.add(self.se)
-
     def updateTree(self, ParticleList, drawList):
         ver = True
         drawList.add(self)
-        count = 0
-        transversed2 = np.array([item for item in ParticleList if(self.contains(item))])
-        if(self.divided and len(transversed2) > 4):
+        transversed = deque(particle for particle in ParticleList if (self.contains(particle)))
+        if(self.divided and len(transversed) > 4):
             ver = False
             self.ne.updateTree(ParticleList, drawList)
             self.nd.updateTree(ParticleList, drawList)
             self.se.updateTree(ParticleList, drawList)
             self.sd.updateTree(ParticleList, drawList)
         if (ver == True):
-            self.updateBalls(transversed2)
+            self.updateBalls(transversed)
     
-    def updateBalls(self, particleList:np.array):
-        while(particleList.size > 0):
-            current = particleList[0]
-            particleList = np.delete(particleList, 0)
-            [current.updatePositionsPosCollision(ball) for ball in particleList if (current != ball and current.colide(ball))]
-            
+    def updateBalls(self, particleList):
+        while(particleList):
+            current = particleList.popleft()
+            for ball in particleList:
+                if (pygame.sprite.collide_circle(current, ball)):
+                    current.updatePositionsPosCollision(ball)
 
                 
             
