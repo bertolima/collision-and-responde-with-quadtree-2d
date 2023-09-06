@@ -35,8 +35,8 @@ class Screen:
         self.window = pygame.display.set_mode((self.coord))
     
     def initTree(self):
-        for i in range(10):
-            self.objects.add(Particle(random.randint(10,25), random.randint(200,600), random.randint(200,600)))
+        for i in range(300):
+            self.objects.add(Particle(random.randint(5,15), random.randint(20,780), random.randint(20,780)))
         self.tree = Quadtree(int(self.coord.x),5)
         self.tree.divide()
 
@@ -83,6 +83,7 @@ class Screen:
         
         pygame.display.flip()
         self.dt = self.clock.tick(60) / 1000
+        print(self.clock.get_fps())
 
     
     def isRunning(self):

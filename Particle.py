@@ -3,7 +3,7 @@ import random
 import math
 
 MAX_SPEED = 200
-SPEED = 2000 
+SPEED = 500 
 
 class Particle(pygame.sprite.Sprite):
 
@@ -66,8 +66,7 @@ class Particle(pygame.sprite.Sprite):
         other.speed.y = -other.speed.y
 
     def colide(self, other):
-        d = math.sqrt((self.rect.x - other.rect.x) * (self.rect.x - other.rect.x) + (self.rect.y - other.rect.y) * (self.rect.y - other.rect.y))
-        return (d <= self.radius+other.radius)
+        return (self.rect.center[0] - other.rect.center[0]) * (self.rect.center[0] - other.rect.center[0]) + (self.rect.center[1] - other.rect.center[1]) * (self.rect.center[1] - other.rect.center[1]) <= pow(self.radius+other.radius,2)
     
     def __lt__(self, other):
          return self.rect.x < other.rect.x and self.rect.y < other.rect.y
