@@ -64,10 +64,6 @@ class Particle(pygame.sprite.Sprite):
         self.speed.y = -self.speed.y
         other.speed.x = -other.speed.x
         other.speed.y = -other.speed.y
-        self.rect.x += self.speed.x * (other.radius>>5)
-        self.rect.y += self.speed.y * (other.radius>>5)
-        other.rect.x += self.speed.x * (self.radius>>5)
-        other.rect.y += self.speed.y * (self.radius>>5)
 
     def colide(self, other):
         d = math.sqrt((self.rect.x - other.rect.x) * (self.rect.x - other.rect.x) + (self.rect.y - other.rect.y) * (self.rect.y - other.rect.y))

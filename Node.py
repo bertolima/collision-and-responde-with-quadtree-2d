@@ -66,14 +66,16 @@ class Node(pygame.sprite.Sprite):
                 self.nd.updateTree(ParticleList, drawList)
                 self.se.updateTree(ParticleList, drawList)
                 self.sd.updateTree(ParticleList, drawList)
-            elif (ver == True):
-                self.updateBalls(transversed)
+                break
+        if (ver == True):
+            self.updateBalls(transversed)
     
     def updateBalls(self, particleList):
-        for ball1 in particleList:
-            for ball2 in particleList:
-                if (ball1 != ball2 and ball1.colide(ball2)):
-                    ball1.updatePositionsPosCollision(ball2)
+        while(particleList):
+            current = particleList.popleft()
+            for ball in particleList:
+                if (current != ball and current.colide(ball)):
+                    current.updatePositionsPosCollision(ball)
 
                 
             
