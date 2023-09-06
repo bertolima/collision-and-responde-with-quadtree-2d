@@ -1,10 +1,11 @@
 import pygame
 import random
+import math
 
 MAX_SPEED = 200
-SPEED = 500 
+SPEED = 2000 
 
-class Ball(pygame.sprite.Sprite):
+class Particle(pygame.sprite.Sprite):
 
     def __init__(self, radius, x, y):
         super().__init__()
@@ -31,15 +32,15 @@ class Ball(pygame.sprite.Sprite):
         
 
     def update(self, x, y, dt, group):
-        #self.updateCollision(group)
         self.updatePosition(dt)
+        #self.updateCollision(group)
         self.boundaries(x,y)
         
 
     def boundaries(self, x, y):
         if (self.rect.x + 2*self.radius >= x or self.rect.x <= 0):
             self.speed.x = -self.speed.x
-        elif(self.rect.y + 2*self.radius >= y or self.rect.y <= 0):
+        if (self.rect.y + 2*self.radius >= y or self.rect.y <= 0):
             self.speed.y = -self.speed.y
 
     def updatePosition(self, dt):
@@ -47,25 +48,34 @@ class Ball(pygame.sprite.Sprite):
         self.rect.y += self.speed.y * dt
 
     def updateCollision(self, group):
-        group.remove(self)
-        currentState = pygame.sprite.spritecollideany(self, group)
-        if(currentState is not None):
-            self.updatePositionsPosCollision(currentState)
-        group.add(self)
+        aux = pygame.sprite.Group()
+        for elem1 in group:
+            current = elem1
+            group.remove(elem1)
+            aux.add(current)
+            for elem2 in group:
+                if(current.colide(elem2)):
+                    current.updatePositionsPosCollision(elem2)
+        for elem in aux:
+            group.add(elem)
 
     def updatePositionsPosCollision(self, other):
         self.speed.x = -self.speed.x
         self.speed.y = -self.speed.y
         other.speed.x = -other.speed.x
         other.speed.y = -other.speed.y
+        self.rect.x += self.speed.x * (other.radius>>5)
+        self.rect.y += self.speed.y * (other.radius>>5)
+        other.rect.x += self.speed.x * (self.radius>>5)
+        other.rect.y += self.speed.y * (self.radius>>5)
 
     def colide(self, other):
-        if(pow(self.radius-other.radius,2) <= pow(self.rect.x+self.radius,2) + pow(self.rect.y+self.radius,2) and
-           pow(self.radius+other.radius,2) >= pow(self.rect.x+self.radius,2) + pow(self.rect.y+self.radius,2)):
-            return True
-        return False
+        d = math.sqrt((self.rect.x - other.rect.x) * (self.rect.x - other.rect.x) + (self.rect.y - other.rect.y) * (self.rect.y - other.rect.y))
+        return (d <= self.radius+other.radius)
     
-            
+    def __lt__(self, other):
+         return self.rect.x < other.rect.x and self.rect.y < other.rect.y
+    
 
 
 

@@ -1,6 +1,7 @@
 import pygame
 import random
-from Ball import Ball
+import threading
+from Particle import Particle
 from Quadtree import Quadtree
 
 class Screen:
@@ -28,35 +29,36 @@ class Screen:
         self.clock = pygame.time.Clock()
         self.coord = pygame.math.Vector2(x,y)
         self.objects = pygame.sprite.Group()
-        self.rectangles = pygame.sprite.Group()
         self.dt = self.clock.tick(60) / 1000
 
     def initWindow(self):
         self.window = pygame.display.set_mode((self.coord))
     
     def initTree(self):
-        self.tree = Quadtree(self.coord.x, self.coord.y, pygame.math.Vector2(0,0),5)
-        self.tree.subdivide(self.rectangles, self.test)
+        for i in range(10):
+            self.objects.add(Particle(random.randint(10,25), random.randint(200,600), random.randint(200,600)))
+        self.tree = Quadtree(int(self.coord.x),5)
+        self.tree.divide()
 
-    def createBalls(self):
+
+    def createParticles(self):
         create = True
         self.mousePosition = pygame.mouse.get_pos()
         click = pygame.mouse.get_pressed()
         if click[0] == True:
-            self.objects.add(Ball(random.randint(5,15), self.mousePosition[0], self.mousePosition[1]))
+            self.objects.add(Particle(random.randint(5,15), self.mousePosition[0], self.mousePosition[1]))
 
-    def updateBalls(self):
+    def updateParticles(self):
         self.objects.update(self.coord.x, self.coord.y, self.dt, self.objects)
         
-    def renderBalls(self):
+    def renderParticles(self):
         self.objects.draw(self.window)
     
     def updateTree(self):
-        self.rectangles.empty()
-        self.tree.update(self.rectangles, self.objects)
+        self.tree.updateTree(self.objects)
     
     def renderRectangles(self):
-        self.rectangles.draw(self.window)
+        self.tree.drawNode(self.window)
 
     def poolEvent(self):
         for event in pygame.event.get():
@@ -68,14 +70,14 @@ class Screen:
 
     def update(self):
         self.poolEvent()
-        self.createBalls()
-        self.updateBalls()
+        #self.createParticles()
+        self.updateParticles()
         self.updateTree()
         
     def render(self):
         self.window.fill("black")
 
-        self.renderBalls()
+        self.renderParticles()
 
         self.renderRectangles()
         
